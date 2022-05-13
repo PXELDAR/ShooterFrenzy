@@ -59,15 +59,39 @@ function love.update(dt)
         bullet.y = bullet.y + (math.sin(bullet.direction) * bullet.speed * dt)
     end
 
+    for i,zombie in ipairs(zombies) do
+       for j,bullet in ipairs(bullets) do
+            if(distanceBetween(zombie.x, zombie.y, bullet.x, bullet.y) < zombie.hitboxSize) then
+                zombie.dead = true
+                bullet.dead = true
+            end
+       end
+    end
+
     --#bullets = length, endingValue, each time = -1
     for i=#bullets, 1, -1 do 
         local bullet = bullets[i]
-
+    
         if(bullet.x < 0 or bullet.y < 0 or bullet.x > love.graphics.getWidth() or bullet.y > love.graphics.getHeight()) then
             table.remove(bullets, i)
         end
     end
 
+    --#zombies = length, endingValue, each time = -1
+    for i=#zombies, 1, -1 do
+        local zombie = zombies[i]
+        if(zombie.dead == true) then
+            table.remove(zombies, i)
+        end
+    end
+
+    --#bullets = length, endingValue, each time = -1
+    for i=#bullets, 1, -1 do
+        local bullet = bullets[i]
+        if(bullet.dead == true) then
+            table.remove(bullets, i)
+        end
+    end
 end
 
 -----------------------------------------------------------------------------------
@@ -117,6 +141,8 @@ function spawnZombie()
     zombie.x = math.random(0, love.graphics.getWidth())
     zombie.y = math.random(0, love.graphics.getHeight())
     zombie.speed = 100
+    zombie.dead = false
+    zombie.hitboxSize = 20
 
     table.insert(zombies, zombie)
 end
@@ -128,8 +154,10 @@ function spawnBullet()
     bullet.x = player.x
     bullet.y = player.y
     bullet.speed = 500
+    bullet.dead = false
     local playerAngleToMouse = angleBetween(player.x, player.y, love.mouse.getX(), love.mouse.getY()) + math.pi --Invert
     bullet.direction = playerAngleToMouse
+ 
     table.insert(bullets, bullet)
 end
 
