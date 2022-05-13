@@ -13,8 +13,14 @@ function love.load()
     player.speed = 200
     player.hitboxSize = 30
 
+    myFont = love.graphics.newFont(30)
+
     zombies = {}
     bullets = {}
+
+    gameState = 1
+    maxTime = 2
+    timer = maxTime
 
     controls = {}
     controls.up = "w"
@@ -28,17 +34,19 @@ end
 -----------------------------------------------------------------------------------
 
 function love.update(dt)
-    if (love.keyboard.isDown(controls.up)) then
-        player.y = player.y - player.speed * dt
-    end
-    if (love.keyboard.isDown(controls.down)) then
-        player.y = player.y + player.speed * dt
-    end
-    if (love.keyboard.isDown(controls.left)) then
-        player.x = player.x - player.speed * dt
-    end
-    if (love.keyboard.isDown(controls.right)) then
-        player.x = player.x + player.speed * dt
+    if (gameState == 2) then
+        if (love.keyboard.isDown(controls.up)) then
+            player.y = player.y - player.speed * dt
+        end
+        if (love.keyboard.isDown(controls.down)) then
+            player.y = player.y + player.speed * dt
+        end
+        if (love.keyboard.isDown(controls.left)) then
+            player.x = player.x - player.speed * dt
+        end
+        if (love.keyboard.isDown(controls.right)) then
+            player.x = player.x + player.speed * dt
+        end
     end
 
     for i,zombie in ipairs(zombies) do
@@ -50,6 +58,9 @@ function love.update(dt)
         if(distanceToPlayer < player.hitboxSize) then
             for i,zombie in ipairs(zombies) do
                 zombies[i] = nil
+                gameState = 1
+                player.x = love.graphics.getWidth() / 2
+                player.y = love.graphics.getHeight() / 2
             end
         end
     end
@@ -92,12 +103,27 @@ function love.update(dt)
             table.remove(bullets, i)
         end
     end
+
+
+    if (gameState == 2) then
+        timer = timer - dt
+        if(timer  <= 0) then
+            spawnZombie()
+            maxTime = 0.95 * maxTime
+            timer = maxTime
+        end
+    end
 end
 
 -----------------------------------------------------------------------------------
 
 function love.draw()
     love.graphics.draw(sprites.background, 0, 0)
+
+    if (gameState == 1) then
+        love.graphics.setFont(myFont)
+        love.graphics.printf("Click anywhere to begin!", 0, 50, love.graphics.getWidth(), "center")
+    end
     
     local playerRotationValue = angleBetween(player.x, player.y, love.mouse.getX(), love.mouse.getY()) + math.pi --Invert
     local playerOffsetX = sprites.player:getWidth() / 2
@@ -129,8 +155,12 @@ end
 -----------------------------------------------------------------------------------
 
 function love.mousepressed(x, y, button)
-    if(button == 1) then
+    if(button == 1 and gameState == 2) then
         spawnBullet();
+    elseif (button == 1 and gameState == 1) then
+        gameState = 2
+        maxTime = 2
+        timer = maxTime
     end
 end
 
