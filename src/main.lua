@@ -23,7 +23,8 @@ function love.load()
     _gameState = 1
     _score = 0
     _zombieSpawnTimeMultiplier = 0.95
-    _zombieSpawnTime = 2
+    _maxZombieSpawnTime = 2
+    _zombieSpawnTime = _maxZombieSpawnTime
     _spawnTimer = _zombieSpawnTime
 
     _controls = {}
@@ -39,7 +40,6 @@ end
 
 function love.update(dt)
 
-    playerMovement(dt)
     zombieMovement(dt)
     bulletMovement(dt)
 
@@ -51,6 +51,7 @@ function love.update(dt)
 
     if(_gameState == 2) then
         spawnZombieOnRuntime(dt)
+        playerMovement(dt)
     end
 end
 
@@ -67,22 +68,20 @@ end
 -----------------------------------------------------------------------------------
 
 function playerMovement(dt)
-    if (_gameState == 2) then
-        if (love.keyboard.isDown(_controls.up) and _player.y > 0) then
-            _player.y = _player.y - _player.speed * dt
-        end
+    if (love.keyboard.isDown(_controls.up) and _player.y > 0) then
+        _player.y = _player.y - _player.speed * dt
+    end
         
-        if (love.keyboard.isDown(_controls.down) and _player.y < love.graphics.getHeight()) then
-            _player.y = _player.y + _player.speed * dt
-        end
+    if (love.keyboard.isDown(_controls.down) and _player.y < love.graphics.getHeight()) then
+        _player.y = _player.y + _player.speed * dt
+    end
         
-        if (love.keyboard.isDown(_controls.left) and _player.x > 0) then
-            _player.x = _player.x - _player.speed * dt
-        end
+    if (love.keyboard.isDown(_controls.left) and _player.x > 0) then
+        _player.x = _player.x - _player.speed * dt
+    end
         
-        if (love.keyboard.isDown(_controls.right) and _player.x < love.graphics.getWidth()) then
-            _player.x = _player.x + _player.speed * dt
-        end
+    if (love.keyboard.isDown(_controls.right) and _player.x < love.graphics.getWidth()) then
+        _player.x = _player.x + _player.speed * dt
     end
 end
 
@@ -141,7 +140,6 @@ function cleanOffscreenBullets()
     --#_bullets = length, endingValue, each time = -1
     for i=#_bullets, 1, -1 do 
         local bullet = _bullets[i]
-    
         if(bullet.x < 0 or bullet.y < 0 or bullet.x > love.graphics.getWidth() or bullet.y > love.graphics.getHeight()) then
             table.remove(_bullets, i)
         end
@@ -245,7 +243,7 @@ function love.mousepressed(x, y, button)
         spawnBullet();
     elseif (button == 1 and _gameState == 1) then
         _gameState = 2
-        _zombieSpawnTime = 2
+        _zombieSpawnTime = _maxZombieSpawnTime
         _spawnTimer = _zombieSpawnTime
         _score = 0
     end
