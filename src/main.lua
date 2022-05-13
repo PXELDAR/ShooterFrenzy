@@ -11,6 +11,7 @@ function love.load()
     player.x = love.graphics.getWidth() / 2
     player.y = love.graphics.getHeight() / 2
     player.speed = 200
+    player.hitboxSize = 30
 
     zombies = {}
 
@@ -43,6 +44,13 @@ function love.update(dt)
         local zombieAngleToPlayer = angleBetween(player.x, player.y, zombie.x, zombie.y)
         zombie.x = zombie.x + (math.cos(zombieAngleToPlayer) * zombie.speed * dt)
         zombie.y = zombie.y + (math.sin(zombieAngleToPlayer) * zombie.speed * dt)
+
+        local distanceToPlayer = distanceBetween(zombie.x, zombie.y, player.x, player.y)
+        if(distanceToPlayer < player.hitboxSize) then
+            for i,zombie in ipairs(zombies) do
+                zombies[i] = nil
+            end
+        end
     end
 end
 
@@ -74,9 +82,7 @@ end
 
 -----------------------------------------------------------------------------------
 
-function angleBetween(x1, y1, x2, y2)
-    return math.atan2(y1 - y2, x1 - x2)
-end
+
 
 -----------------------------------------------------------------------------------
 
@@ -87,6 +93,18 @@ function spawnZombie()
     zombie.speed = 100
 
     table.insert(zombies, zombie)
+end
+
+-----------------------------------------------------------------------------------
+
+function distanceBetween(x1, y1, x2, y2)
+    return math.sqrt((x2 - x1)^2 + (y2 - y1)^2)
+end
+
+-----------------------------------------------------------------------------------
+
+function angleBetween(x1, y1, x2, y2)
+    return math.atan2(y1 - y2, x1 - x2)
 end
 
 -----------------------------------------------------------------------------------
