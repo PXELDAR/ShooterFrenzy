@@ -1,6 +1,8 @@
 -----------------------------------------------------------------------------------
 
 function love.load()
+    math.randomseed(os.time())
+
     sprites = {}
     sprites.background = love.graphics.newImage("assets/background.png")
     sprites.bullet = love.graphics.newImage("assets/bullet.png")
