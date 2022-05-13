@@ -21,6 +21,7 @@ function love.load()
     bullets = {}
 
     gameState = 1
+    score = 0
     maxTime = 2
     timer = maxTime
 
@@ -37,16 +38,16 @@ end
 
 function love.update(dt)
     if (gameState == 2) then
-        if (love.keyboard.isDown(controls.up)) then
+        if (love.keyboard.isDown(controls.up) and player.y > 0) then
             player.y = player.y - player.speed * dt
         end
-        if (love.keyboard.isDown(controls.down)) then
+        if (love.keyboard.isDown(controls.down) and player.y < love.graphics.getHeight()) then
             player.y = player.y + player.speed * dt
         end
-        if (love.keyboard.isDown(controls.left)) then
+        if (love.keyboard.isDown(controls.left) and player.x > 0) then
             player.x = player.x - player.speed * dt
         end
-        if (love.keyboard.isDown(controls.right)) then
+        if (love.keyboard.isDown(controls.right) and player.x < love.graphics.getWidth()) then
             player.x = player.x + player.speed * dt
         end
     end
@@ -77,6 +78,7 @@ function love.update(dt)
             if(distanceBetween(zombie.x, zombie.y, bullet.x, bullet.y) < zombie.hitboxSize) then
                 zombie.dead = true
                 bullet.dead = true
+                score = score + 1
             end
        end
     end
@@ -126,6 +128,8 @@ function love.draw()
         love.graphics.setFont(myFont)
         love.graphics.printf("Click anywhere to begin!", 0, 50, love.graphics.getWidth(), "center")
     end
+
+    love.graphics.printf("Score: " .. score, 0, love.graphics.getHeight() - 50, love.graphics.getWidth(), "center")
     
     local playerRotationValue = angleBetween(player.x, player.y, love.mouse.getX(), love.mouse.getY()) + math.pi --Invert
     local playerOffsetX = sprites.player:getWidth() / 2
@@ -163,6 +167,7 @@ function love.mousepressed(x, y, button)
         gameState = 2
         maxTime = 2
         timer = maxTime
+        score = 0
     end
 end
 
