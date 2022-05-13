@@ -58,6 +58,16 @@ function love.update(dt)
         bullet.x = bullet.x + (math.cos(bullet.direction) * bullet.speed * dt)
         bullet.y = bullet.y + (math.sin(bullet.direction) * bullet.speed * dt)
     end
+
+    --#bullets = length, endingValue, each time = -1
+    for i=#bullets, 1, -1 do 
+        local bullet = bullets[i]
+
+        if(bullet.x < 0 or bullet.y < 0 or bullet.x > love.graphics.getWidth() or bullet.y > love.graphics.getHeight()) then
+            table.remove(bullets, i)
+        end
+    end
+
 end
 
 -----------------------------------------------------------------------------------
