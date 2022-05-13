@@ -38,6 +38,12 @@ function love.update(dt)
     if (love.keyboard.isDown(controls.right)) then
         player.x = player.x + player.speed * dt
     end
+
+    for i,zombie in ipairs(zombies) do
+        local zombieAngleToPlayer = angleBetween(player.x, player.y, zombie.x, zombie.y)
+        zombie.x = zombie.x + (math.cos(zombieAngleToPlayer) * zombie.speed * dt)
+        zombie.y = zombie.y + (math.sin(zombieAngleToPlayer) * zombie.speed * dt)
+    end
 end
 
 -----------------------------------------------------------------------------------
