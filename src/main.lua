@@ -10,12 +10,31 @@ function love.load()
     player = {}
     player.x = love.graphics.getWidth() / 2
     player.y = love.graphics.getHeight() / 2
+    player.speed = 3
+
+    controls = {}
+    controls.up = "w"
+    controls.down = "s"
+    controls.left = "a"
+    controls.right = "d"
 
 end
 
 -----------------------------------------------------------------------------------
 
 function love.update(dt)
+    if (love.keyboard.isDown(controls.up)) then
+        player.y = player.y - player.speed
+    end
+    if (love.keyboard.isDown(controls.down)) then
+        player.y = player.y + player.speed
+    end
+    if (love.keyboard.isDown(controls.left)) then
+        player.x = player.x - player.speed
+    end
+    if (love.keyboard.isDown(controls.right)) then
+        player.x = player.x + player.speed
+    end
 end
 
 -----------------------------------------------------------------------------------
