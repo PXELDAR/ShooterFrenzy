@@ -3,157 +3,237 @@
 function love.load()
     math.randomseed(os.time())
 
-    sprites = {}
-    sprites.background = love.graphics.newImage("assets/background.png")
-    sprites.bullet = love.graphics.newImage("assets/bullet.png")
-    sprites.player = love.graphics.newImage("assets/player.png")
-    sprites.zombie = love.graphics.newImage("assets/zombie.png")
+    _sprites = {}
+    _sprites.background = love.graphics.newImage("assets/background.png")
+    _sprites.bullet = love.graphics.newImage("assets/bullet.png")
+    _sprites.player = love.graphics.newImage("assets/player.png")
+    _sprites.zombie = love.graphics.newImage("assets/zombie.png")
 
-    player = {}
-    player.x = love.graphics.getWidth() / 2
-    player.y = love.graphics.getHeight() / 2
-    player.speed = 200
-    player.hitboxSize = 30
+    _player = {}
+    _player.x = love.graphics.getWidth() / 2
+    _player.y = love.graphics.getHeight() / 2
+    _player.speed = 200
+    _player.hitboxSize = 30
 
-    myFont = love.graphics.newFont(30)
+    _font = love.graphics.newFont(30)
 
-    zombies = {}
-    bullets = {}
+    _zombies = {}
+    _bullets = {}
 
-    gameState = 1
-    score = 0
-    maxTime = 2
-    timer = maxTime
+    _gameState = 1
+    _score = 0
+    _zombieSpawnTimeMultiplier = 0.95
+    _zombieSpawnTime = 2
+    _spawnTimer = _zombieSpawnTime
 
-    controls = {}
-    controls.up = "w"
-    controls.down = "s"
-    controls.left = "a"
-    controls.right = "d"
-    controls.space = "space"
+    _controls = {}
+    _controls.up = "w"
+    _controls.down = "s"
+    _controls.left = "a"
+    _controls.right = "d"
+    _controls.space = "space"
 
 end
 
 -----------------------------------------------------------------------------------
 
 function love.update(dt)
-    if (gameState == 2) then
-        if (love.keyboard.isDown(controls.up) and player.y > 0) then
-            player.y = player.y - player.speed * dt
-        end
-        if (love.keyboard.isDown(controls.down) and player.y < love.graphics.getHeight()) then
-            player.y = player.y + player.speed * dt
-        end
-        if (love.keyboard.isDown(controls.left) and player.x > 0) then
-            player.x = player.x - player.speed * dt
-        end
-        if (love.keyboard.isDown(controls.right) and player.x < love.graphics.getWidth()) then
-            player.x = player.x + player.speed * dt
-        end
-    end
 
-    for i,zombie in ipairs(zombies) do
-        local zombieAngleToPlayer = angleBetween(player.x, player.y, zombie.x, zombie.y)
-        zombie.x = zombie.x + (math.cos(zombieAngleToPlayer) * zombie.speed * dt)
-        zombie.y = zombie.y + (math.sin(zombieAngleToPlayer) * zombie.speed * dt)
+    playerMovement(dt)
+    zombieMovement(dt)
+    bulletMovement(dt)
 
-        local distanceToPlayer = distanceBetween(zombie.x, zombie.y, player.x, player.y)
-        if(distanceToPlayer < player.hitboxSize) then
-            for i,zombie in ipairs(zombies) do
-                zombies[i] = nil
-                gameState = 1
-                player.x = love.graphics.getWidth() / 2
-                player.y = love.graphics.getHeight() / 2
-            end
-        end
-    end
-
-    for i,bullet in ipairs(bullets) do
-        bullet.x = bullet.x + (math.cos(bullet.direction) * bullet.speed * dt)
-        bullet.y = bullet.y + (math.sin(bullet.direction) * bullet.speed * dt)
-    end
-
-    for i,zombie in ipairs(zombies) do
-       for j,bullet in ipairs(bullets) do
-            if(distanceBetween(zombie.x, zombie.y, bullet.x, bullet.y) < zombie.hitboxSize) then
-                zombie.dead = true
-                bullet.dead = true
-                score = score + 1
-            end
-       end
-    end
-
-    --#bullets = length, endingValue, each time = -1
-    for i=#bullets, 1, -1 do 
-        local bullet = bullets[i]
+    checkBulletCollision()
+    cleanOffscreenBullets()
     
-        if(bullet.x < 0 or bullet.y < 0 or bullet.x > love.graphics.getWidth() or bullet.y > love.graphics.getHeight()) then
-            table.remove(bullets, i)
-        end
-    end
+    checkDeadZombies()
+    checkDeadBullets()
 
-    --#zombies = length, endingValue, each time = -1
-    for i=#zombies, 1, -1 do
-        local zombie = zombies[i]
-        if(zombie.dead == true) then
-            table.remove(zombies, i)
-        end
-    end
-
-    --#bullets = length, endingValue, each time = -1
-    for i=#bullets, 1, -1 do
-        local bullet = bullets[i]
-        if(bullet.dead == true) then
-            table.remove(bullets, i)
-        end
-    end
-
-
-    if (gameState == 2) then
-        timer = timer - dt
-        if(timer  <= 0) then
-            spawnZombie()
-            maxTime = 0.95 * maxTime
-            timer = maxTime
-        end
+    if(_gameState == 2) then
+        spawnZombieOnRuntime(dt)
     end
 end
 
 -----------------------------------------------------------------------------------
 
 function love.draw()
-    love.graphics.draw(sprites.background, 0, 0)
+    drawBackGround()
+    drawUserInterface()
+    drawPlayer()
+    drawZombies()
+    drawBullets()
+end
 
-    if (gameState == 1) then
-        love.graphics.setFont(myFont)
+-----------------------------------------------------------------------------------
+
+function playerMovement(dt)
+    if (_gameState == 2) then
+        if (love.keyboard.isDown(_controls.up) and _player.y > 0) then
+            _player.y = _player.y - _player.speed * dt
+        end
+        
+        if (love.keyboard.isDown(_controls.down) and _player.y < love.graphics.getHeight()) then
+            _player.y = _player.y + _player.speed * dt
+        end
+        
+        if (love.keyboard.isDown(_controls.left) and _player.x > 0) then
+            _player.x = _player.x - _player.speed * dt
+        end
+        
+        if (love.keyboard.isDown(_controls.right) and _player.x < love.graphics.getWidth()) then
+            _player.x = _player.x + _player.speed * dt
+        end
+    end
+end
+
+-----------------------------------------------------------------------------------
+
+function zombieMovement(dt)
+    for i,zombie in ipairs(_zombies) do
+        local zombieAngleToPlayer = angleBetween(_player.x, _player.y, zombie.x, zombie.y)
+        zombie.x = zombie.x + (math.cos(zombieAngleToPlayer) * zombie.speed * dt)
+        zombie.y = zombie.y + (math.sin(zombieAngleToPlayer) * zombie.speed * dt)
+
+        local distanceToPlayer = distanceBetween(zombie.x, zombie.y, _player.x, _player.y)
+        if(distanceToPlayer < _player.hitboxSize) then
+            onZombieOverlapPlayer()
+        end
+    end
+end
+
+-----------------------------------------------------------------------------------
+
+function bulletMovement(dt)
+    for i,bullet in ipairs(_bullets) do
+        bullet.x = bullet.x + (math.cos(bullet.direction) * bullet.speed * dt)
+        bullet.y = bullet.y + (math.sin(bullet.direction) * bullet.speed * dt)
+    end
+end
+
+-----------------------------------------------------------------------------------
+
+function onZombieOverlapPlayer()
+    for i,zombie in ipairs(_zombies) do
+        _zombies[i] = nil
+        _gameState = 1
+        _player.x = love.graphics.getWidth() / 2
+        _player.y = love.graphics.getHeight() / 2
+    end
+end
+
+-----------------------------------------------------------------------------------
+
+function checkBulletCollision()
+    for i,zombie in ipairs(_zombies) do
+        for j,bullet in ipairs(_bullets) do
+             if(distanceBetween(zombie.x, zombie.y, bullet.x, bullet.y) < zombie.hitboxSize) then
+                zombie.dead = true
+                bullet.dead = true
+                _score = _score + 1
+             end
+        end
+     end
+end
+
+-----------------------------------------------------------------------------------
+
+function cleanOffscreenBullets()
+    --#_bullets = length, endingValue, each time = -1
+    for i=#_bullets, 1, -1 do 
+        local bullet = _bullets[i]
+    
+        if(bullet.x < 0 or bullet.y < 0 or bullet.x > love.graphics.getWidth() or bullet.y > love.graphics.getHeight()) then
+            table.remove(_bullets, i)
+        end
+    end
+end
+
+-----------------------------------------------------------------------------------
+
+function checkDeadZombies()
+    --#_zombies = length, endingValue, each time = -1
+    for i=#_zombies, 1, -1 do
+        local zombie = _zombies[i]
+        if(zombie.dead == true) then
+            table.remove(_zombies, i)
+        end
+    end
+end
+
+-----------------------------------------------------------------------------------
+
+function checkDeadBullets()
+    --#_bullets = length, endingValue, each time = -1
+    for i=#_bullets, 1, -1 do
+        local bullet = _bullets[i]
+        if(bullet.dead == true) then
+            table.remove(_bullets, i)
+        end
+    end
+end
+
+-----------------------------------------------------------------------------------
+
+function spawnZombieOnRuntime(dt)
+    _spawnTimer = _spawnTimer - dt
+    if(_spawnTimer  <= 0) then
+        spawnZombie()
+        _zombieSpawnTime = _zombieSpawnTimeMultiplier * _zombieSpawnTime
+        _spawnTimer = _zombieSpawnTime
+    end
+end
+
+-----------------------------------------------------------------------------------
+
+function drawBackGround()
+    love.graphics.draw(_sprites.background, 0, 0)
+end
+
+-----------------------------------------------------------------------------------
+
+function drawUserInterface()
+    if (_gameState == 1) then
+        love.graphics.setFont(_font)
         love.graphics.printf("Click anywhere to begin!", 0, 50, love.graphics.getWidth(), "center")
     end
 
-    love.graphics.printf("Score: " .. score, 0, love.graphics.getHeight() - 50, love.graphics.getWidth(), "center")
-    
-    local playerRotationValue = angleBetween(player.x, player.y, love.mouse.getX(), love.mouse.getY()) + math.pi --Invert
-    local playerOffsetX = sprites.player:getWidth() / 2
-    local playerOffsetY = sprites.player:getHeight() / 2
-    love.graphics.draw(sprites.player, player.x, player.y, playerRotationValue, nil, nil, playerOffsetX, playerOffsetY)
+    love.graphics.printf("Score: " .. _score, 0, love.graphics.getHeight() - 50, love.graphics.getWidth(), "center")
+end
 
-    for i,zombie in ipairs(zombies) do
-        local zombieRotationValue = angleBetween(player.x, player.y, zombie.x, zombie.y)
-        local zombieOffsetX = sprites.zombie:getWidth() / 2
-        local zombieOffsetY = sprites.zombie:getHeight() / 2
-        love.graphics.draw(sprites.zombie, zombie.x, zombie.y, zombieRotationValue, nil, nil, zombieOffsetX, zombieOffsetY)
+-----------------------------------------------------------------------------------
+
+function drawPlayer()
+    local playerRotationValue = angleBetween(_player.x, _player.y, love.mouse.getX(), love.mouse.getY()) + math.pi --Invert
+    local playerOffsetX = _sprites.player:getWidth() / 2
+    local playerOffsetY = _sprites.player:getHeight() / 2
+    love.graphics.draw(_sprites.player, _player.x, _player.y, playerRotationValue, nil, nil, playerOffsetX, playerOffsetY)
+end
+
+-----------------------------------------------------------------------------------
+
+function drawZombies()
+    for i,zombie in ipairs(_zombies) do
+        local zombieRotationValue = angleBetween(_player.x, _player.y, zombie.x, zombie.y)
+        local zombieOffsetX = _sprites.zombie:getWidth() / 2
+        local zombieOffsetY = _sprites.zombie:getHeight() / 2
+        love.graphics.draw(_sprites.zombie, zombie.x, zombie.y, zombieRotationValue, nil, nil, zombieOffsetX, zombieOffsetY)
     end
+end
 
-    for i,bullet in ipairs(bullets) do
-        local bulletOffsetX = sprites.bullet:getWidth() / 2
-        local bulletOffsetY = sprites.bullet:getHeight() / 2
-        love.graphics.draw(sprites.bullet, bullet.x, bullet.y, nil, 0.5, nil, bulletOffsetX, bulletOffsetY)
+-----------------------------------------------------------------------------------
+
+function drawBullets()
+    for i,bullet in ipairs(_bullets) do
+        local bulletOffsetX = _sprites.bullet:getWidth() / 2
+        local bulletOffsetY = _sprites.bullet:getHeight() / 2
+        love.graphics.draw(_sprites.bullet, bullet.x, bullet.y, nil, 0.5, nil, bulletOffsetX, bulletOffsetY)
     end
 end
 
 -----------------------------------------------------------------------------------
 
 function love.keypressed(key)
-    if(key == controls.space) then
+    if(key == _controls.space) then
         spawnZombie()
     end
 end
@@ -161,13 +241,13 @@ end
 -----------------------------------------------------------------------------------
 
 function love.mousepressed(x, y, button)
-    if(button == 1 and gameState == 2) then
+    if(button == 1 and _gameState == 2) then
         spawnBullet();
-    elseif (button == 1 and gameState == 1) then
-        gameState = 2
-        maxTime = 2
-        timer = maxTime
-        score = 0
+    elseif (button == 1 and _gameState == 1) then
+        _gameState = 2
+        _zombieSpawnTime = 2
+        _spawnTimer = _zombieSpawnTime
+        _score = 0
     end
 end
 
@@ -196,21 +276,21 @@ function spawnZombie()
         zombie.y = love.graphics.getHeight() + 30
     end
 
-    table.insert(zombies, zombie)
+    table.insert(_zombies, zombie)
 end
 
 -----------------------------------------------------------------------------------
 
 function spawnBullet()
     local bullet = {}
-    bullet.x = player.x
-    bullet.y = player.y
+    bullet.x = _player.x
+    bullet.y = _player.y
     bullet.speed = 500
     bullet.dead = false
-    local playerAngleToMouse = angleBetween(player.x, player.y, love.mouse.getX(), love.mouse.getY()) + math.pi --Invert
+    local playerAngleToMouse = angleBetween(_player.x, _player.y, love.mouse.getX(), love.mouse.getY()) + math.pi --Invert
     bullet.direction = playerAngleToMouse
  
-    table.insert(bullets, bullet)
+    table.insert(_bullets, bullet)
 end
 
 -----------------------------------------------------------------------------------
