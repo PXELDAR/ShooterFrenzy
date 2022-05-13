@@ -78,7 +78,9 @@ function love.draw()
     end
 
     for i,bullet in ipairs(bullets) do
-        love.graphics.draw(sprites.bullet, bullet.x, bullet.y)
+        local bulletOffsetX = sprites.bullet:getWidth() / 2
+        local bulletOffsetY = sprites.bullet:getHeight() / 2
+        love.graphics.draw(sprites.bullet, bullet.x, bullet.y, nil, 0.5, nil, bulletOffsetX, bulletOffsetY)
     end
 end
 
