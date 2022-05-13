@@ -45,10 +45,16 @@ end
 function love.draw()
     love.graphics.draw(sprites.background, 0, 0)
     
-    love.graphics.draw(sprites.player, player.x, player.y, angleBetween(player.x, player.y, love.mouse.getX(), love.mouse.getY()), nil, nil, sprites.player:getWidth() / 2, sprites.player:getHeight() / 2)
+    local playerRotationValue = angleBetween(player.x, player.y, love.mouse.getX(), love.mouse.getY()) + math.pi --Invert
+    local playerOffsetX = sprites.player:getWidth() / 2
+    local playerOffsetY = sprites.player:getHeight() / 2
+    love.graphics.draw(sprites.player, player.x, player.y, playerRotationValue, nil, nil, playerOffsetX, playerOffsetY)
 
     for i,zombie in ipairs(zombies) do
-        love.graphics.draw(sprites.zombie, zombie.x, zombie.y)
+        local zombieRotationValue = angleBetween(player.x, player.y, zombie.x, zombie.y)
+        local zombieOffsetX = sprites.zombie:getWidth() / 2
+        local zombieOffsetY = sprites.zombie:getHeight() / 2
+        love.graphics.draw(sprites.zombie, zombie.x, zombie.y, zombieRotationValue, nil, nil, zombieOffsetX, zombieOffsetY)
     end
 end
 
@@ -63,7 +69,7 @@ end
 -----------------------------------------------------------------------------------
 
 function angleBetween(x1, y1, x2, y2)
-    return math.atan2(y1 - y2, x1 - x2) + math.pi
+    return math.atan2(y1 - y2, x1 - x2)
 end
 
 -----------------------------------------------------------------------------------
