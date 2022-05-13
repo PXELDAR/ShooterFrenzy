@@ -41,7 +41,13 @@ end
 
 function love.draw()
     love.graphics.draw(sprites.background, 0, 0)
-    love.graphics.draw(sprites.player, player.x, player.y)
+    love.graphics.draw(sprites.player, player.x, player.y, angleBetween(player.x, player.y, love.mouse.getX(), love.mouse.getY()), nil, nil, sprites.player:getWidth() / 2, sprites.player:getHeight() / 2)
+end
+
+-----------------------------------------------------------------------------------
+
+function angleBetween(x1, y1, x2, y2)
+    return math.atan2(y1 - y2, x1 - x2) + math.pi
 end
 
 -----------------------------------------------------------------------------------
