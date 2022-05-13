@@ -14,6 +14,7 @@ function love.load()
     player.hitboxSize = 30
 
     zombies = {}
+    bullets = {}
 
     controls = {}
     controls.up = "w"
@@ -52,6 +53,11 @@ function love.update(dt)
             end
         end
     end
+
+    for i,bullet in ipairs(bullets) do
+        bullet.x = bullet.x + (math.cos(bullet.direction) * bullet.speed * dt)
+        bullet.y = bullet.y + (math.sin(bullet.direction) * bullet.speed * dt)
+    end
 end
 
 -----------------------------------------------------------------------------------
@@ -70,6 +76,10 @@ function love.draw()
         local zombieOffsetY = sprites.zombie:getHeight() / 2
         love.graphics.draw(sprites.zombie, zombie.x, zombie.y, zombieRotationValue, nil, nil, zombieOffsetX, zombieOffsetY)
     end
+
+    for i,bullet in ipairs(bullets) do
+        love.graphics.draw(sprites.bullet, bullet.x, bullet.y)
+    end
 end
 
 -----------------------------------------------------------------------------------
@@ -82,7 +92,11 @@ end
 
 -----------------------------------------------------------------------------------
 
-
+function love.mousepressed(x, y, button)
+    if(button == 1) then
+        spawnBullet();
+    end
+end
 
 -----------------------------------------------------------------------------------
 
@@ -93,6 +107,18 @@ function spawnZombie()
     zombie.speed = 100
 
     table.insert(zombies, zombie)
+end
+
+-----------------------------------------------------------------------------------
+
+function spawnBullet()
+    local bullet = {}
+    bullet.x = player.x
+    bullet.y = player.y
+    bullet.speed = 500
+    local playerAngleToMouse = angleBetween(player.x, player.y, love.mouse.getX(), love.mouse.getY()) + math.pi --Invert
+    bullet.direction = playerAngleToMouse
+    table.insert(bullets, bullet)
 end
 
 -----------------------------------------------------------------------------------
